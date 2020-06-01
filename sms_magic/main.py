@@ -1,37 +1,31 @@
 import asks
-import time
 import trio
+import os
+import contextlib
+from dotenv import load_dotenv
+import asyncclick as click
 
 
-urls = [
-    'http://www.facebook.com',
-    'http://www.twitter.com',
-    'http://www.instagram.com',
-    'http://www.google.com',
-    'http://www.youtube.com',
-    'http://www.medium.com',
-    'https://git-scm.com',
-    'http://www.github.com',
-    'http://www.gitlab.com',
-    'http://www.python.org',
-    'http://python-requests.org/',
-    'http://trio.readthedocs.io'
-]
+async def fetch(url, params):
+    my_response = await asks.get(url, params=params)
+    my_response.raise_for_status()
+    print(my_response.text)
+    return my_response.text
 
 
-async def fetch(url):
-    print("Start: ", url)
-    response = await asks.get(url)
-    print("Finished: ", url, len(response.content))
-
-
-async def main(urls):
-    start_time = time.time()
+@click.command(load_dotenv())
+async def main(**args):
+    url = 'https://smsc.ru/sys/send.php'
+    params = {
+        'login': os.getenv("LOGIN"),
+        'psw': os.getenv("PASSWORD"),
+        'phones': os.getenv("PHONES"),
+        'mes': 'HOHOHO!'
+    }
     async with trio.open_nursery() as nursery:
-        for url in urls:
-            nursery.start_soon(fetch, url)
-    print("Total time:", time.time() - start_time)
+        nursery.start_soon(fetch, url, params)
 
 
-if __name__ == "__main__":
-    trio.run(main, urls)
+if __name__ == '__main__':
+    with contextlib.suppress(KeyboardInterrupt):
+        main(_anyio_backend="trio")
