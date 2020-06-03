@@ -1,0 +1,5 @@
+
+
+class SmscApiError(Exception):
+    pass
+
