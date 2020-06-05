@@ -1,3 +1,4 @@
 asks==2.3.7
 trio==0.15.1
 asyncclick==7.0.9
+jsonschema==3.2.0
