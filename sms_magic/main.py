@@ -38,7 +38,6 @@ async def request_smsc(method, login, password, payload):
         raise SmscApiError(f'unknown {method=}')
     if not payload['phones']:
         raise SmscApiError(f'unknown phones')
-    #url = URL.replace('method', method)
     url = get_url(method)
     payload.update({'login': login, 'psw': password, 'fmt': JSON_FMT})
     smsc_response = await asks.get(url, params=payload)
@@ -49,22 +48,26 @@ async def request_smsc(method, login, password, payload):
     return response
 
 
+
 @click.command(load_dotenv())
 async def main(**args):
     message = 'Внимание!!, вечером будет шторм!'
     phones = os.getenv("PHONES")
     payload = {'phones': phones, 'mes': message}
     async with trio.open_nursery() as nursery:
-        smsc_response = nursery.start_soon(request_smsc,
-                                           'send',
-                                           os.getenv("LOGIN"),
-                                           os.getenv("PASSWORD"),
-                                           payload)
+        smsc_response = await nursery.start_soon(request_smsc,
+                                                 'send',
+                                                 os.getenv("LOGIN"),
+                                                 os.getenv("PASSWORD"),
+                                                 payload)
         print(smsc_response)
 
 
 if __name__ == '__main__':
     with contextlib.suppress(KeyboardInterrupt):
         main(_anyio_backend="trio")
+
+
+
 
 # {'id': 100, 'cnt': 1}
